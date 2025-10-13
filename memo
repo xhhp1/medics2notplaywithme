@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>🧬الشؤون الإدارية🧬</title>
+<style>
+  body {
+    font-family: "Tahoma", sans-serif;
+    background-image: url('https://raw.githubusercontent.com/xhhp1/medicaljpg/main/medic.jpg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    padding: 30px;
+    text-align: right;
+    color: #000;
+  }
+  .overlay {
+    background-color: rgba(255,255,255,0.95);
+    border-radius: 20px;
+    max-width: 800px;
+    margin: auto;
+    padding: 25px 30px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+  }
+  h2 {
+    text-align: center;
+    color: #8B0000;
+  }
+  .tabs {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .tab-btn {
+    flex: 1;
+    background-color: #8B0000;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  .tab-btn:hover {
+    background-color: #a91c1c;
+  }
+  .form-section {
+    display: none;
+  }
+  label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+  }
+  input, select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    text-align: right;
+    font-size: 15px;
+  }
+  .time-group {
+    display: flex;
+    gap: 10px;
+  }
+  .time-group input, .time-group select {
+    flex: 1;
+  }
+  button.generate {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: #8B0000;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+  }
+  button.generate:hover {
+    background-color: #a91c1c;
+  }
+  pre {
+    background: #ffffffcc;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 20px;
+    white-space: pre-wrap;
+    direction: rtl;
+    border: 1px solid #ccc;
+    font-size: 15px;
+  }
+</style>
+</head>
+<body>
+
+<div class="overlay">
+  <h2>🧬الشؤون الإدارية🧬</h2>
+  <div class="tabs">
+    <button class="tab-btn" onclick="showForm('internalLeave')">الإجازة الداخلية</button>
+    <button class="tab-btn" onclick="showForm('resignation')">الاستقالة</button>
+    <button class="tab-btn" onclick="showForm('externalLeave')">إجازة خارجية</button>
+    <button class="tab-btn" onclick="showForm('assignment')">نموذج الانتداب</button>
+  </div>
+
+  <!-- الإجازة الداخلية -->
+  <div id="internalLeave" class="form-section">
+    <h3>الإجازة الداخلية</h3>
+    <label>الكوبي يوزر:</label>
+    <input type="text" id="int_copyUser" placeholder="أدخل الكوبي يوزر">
+    <label>مدة الإجازة (بالساعات):</label>
+    <input type="number" id="int_vac_duration" placeholder="عدد الساعات">
+    <label>الرصيد المتبقي (بالساعات):</label>
+    <input type="number" id="int_vac_balance" placeholder="عدد الساعات">
+    <label>وقت بدء الإجازة:</label>
+    <div class="time-group">
+      <input type="number" id="int_vac_startHour" placeholder="الساعة (1-12)">
+      <input type="number" id="int_vac_startMinute" placeholder="الدقيقة (0-59)">
+      <select id="int_vac_startPeriod">
+        <option value="ص">صباحًا</option>
+        <option value="م">مساءً</option>
+      </select>
+    </div>
+    <button class="generate" onclick="generateInternalLeave()">إنشاء القرار</button>
+    <button class="generate" onclick="copyInternalLeave()">نسخ القرار</button>
+    <pre id="int_output"></pre>
+  </div>
+
+  <!-- الاستقالة -->
+  <div id="resignation" class="form-section">
+    <h3>الاستقالة / إنهاء خدمات</h3>
+    <label>مستوى المسعف:</label>
+    <select id="res_level" onchange="updateResFields()">
+      <option value="">-- اختر المستوى --</option>
+      <option value="متدرب">متدرب</option>
+      <option value="مستوى 1">مستوى 1</option>
+      <option value="مستوى 2 فما فوق">مستوى 2 فما فوق</option>
+    </select>
+    <label>اسمه وكوده الميداني:</label>
+    <input type="text" id="res_nameCode" placeholder="أدخل الاسم والرقم الميداني">
+    <label>الكوبي ايدي:</label>
+    <input type="text" id="res_copyId" placeholder="أدخل الكوبي ايدي">
+    <div id="res_violationsField" style="display:none;">
+      <label>هل يوجد عليه مخالفات سابقه:</label>
+      <select id="res_hasViolations">
+        <option value="لا">لا</option>
+        <option value="نعم">نعم</option>
+      </select>
+    </div>
+    <button class="generate" onclick="generateResignation()">إنشاء القرار</button>
+    <button class="generate" onclick="copyResignation()">نسخ القرار</button>
+    <pre id="res_output"></pre>
+  </div>
+
+  <!-- إجازة خارجية -->
+  <div id="externalLeave" class="form-section">
+    <h3>إجازة خارجية</h3>
+    <label>أختر نوع الاجازة الخارجية:</label>
+    <select id="ext_leaveType" onchange="updateExtForm()">
+      <option value="">-- اختر نوع الإجازة --</option>
+      <option value="اجازة خارجية">اجازة خارجية</option>
+      <option value="تمديد اجازة خارجية">تمديد اجازة خارجية</option>
+    </select>
+    <label>الكوبي ايدي:</label>
+    <input type="text" id="ext_copyUser" placeholder="أدخل الكوبي ايدي">
+    <div id="ext_leaveDaysField" style="display:none;">
+      <label>مدة الإجازة (بالأيام):</label>
+      <input type="number" id="ext_leaveDays" placeholder="أدخل عدد الأيام">
+    </div>
+    <div id="ext_extensionField" style="display:none;">
+      <label>تاريخ انتهاء الاجازة السابقة:</label>
+      <input type="date" id="ext_previousEndDate">
+      <label>مدة التمديد (بالأيام):</label>
+      <input type="number" id="ext_extensionDays" placeholder="أدخل عدد الأيام">
+    </div>
+    <button class="generate" onclick="generateExternalLeave()">إنشاء القرار</button>
+    <button class="generate" onclick="copyExternalLeave()">نسخ القرار</button>
+    <pre id="ext_output"></pre>
+  </div>
+
+  <!-- نموذج الانتداب -->
+  <div id="assignment" class="form-section">
+    <h3>نموذج الانتداب</h3>
+    <label>الكوبي ايدي:</label>
+    <input type="text" id="ass_copyId" placeholder="أدخل الكوبي ايدي ">
+    <label>اختر القطاع المنتدب اليه:</label>
+    <select id="ass_sector">
+      <option value="">-- اختر القطاع --</option>
+      <option value="حرس الحدود">حرس الحدود</option>
+      <option value="امن عام">امن عام</option>
+      <option value="امن الطرق">امن الطرق</option>
+      <option value="امن المنشات">امن المنشات</option>
+      <option value="كراج الميكانيكي">كراج الميكانيكي</option>
+      <option value="قوات الطوراى الخاصه">قوات الطوراى الخاصه</option>
+    </select>
+    <label>المدة بالايام:</label>
+    <input type="number" id="ass_duration" placeholder="أدخل المدة بالأيام">
+    <button class="generate" onclick="generateAssignment()">إنشاء القرار</button>
+    <button class="generate" onclick="copyAssignment()">نسخ القرار</button>
+    <pre id="ass_output"></pre>
+  </div>
+</div>
+
+<script>
+// Tab function
+function showForm(id){
+  document.querySelectorAll('.form-section').forEach(f => f.style.display='none');
+  document.getElementById(id).style.display='block';
+}
+
+// ---------- الإجازة الداخلية ----------
+function generateInternalLeave(){
+  let copyUser = document.getElementById("int_copyUser").value.trim();
+  let duration = parseFloat(document.getElementById("int_vac_duration").value) || 0;
+  let balance = parseFloat(document.getElementById("int_vac_balance").value) || 0;
+  let startHour = parseInt(document.getElementById("int_vac_startHour").value);
+  let startMinute = parseInt(document.getElementById("int_vac_startMinute").value);
+  let period = document.getElementById("int_vac_startPeriod").value;
+
+  if (!startHour || startHour < 1 || startHour > 12) return alert("⚠️ الرجاء إدخال ساعة صحيحة (1 - 12)");
+  if (isNaN(startMinute) || startMinute < 0 || startMinute > 59) return alert("⚠️ الرجاء إدخال دقيقة صحيحة (0 - 59)");
+
+  if (period === "م" && startHour < 12) startHour += 12;
+  if (period === "ص" && startHour === 12) startHour = 0;
+
+  let tzDate = new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Riyadh"}));
+  let yyyy = tzDate.getFullYear();
+  let mm = String(tzDate.getMonth()+1).padStart(2,'0');
+  let dd = String(tzDate.getDate()).padStart(2,'0');
+
+  let startDate = new Date(`${yyyy}-${mm}-${dd}T${String(startHour).padStart(2,'0')}:${String(startMinute).padStart(2,'0')}:00`);
+  let endDate = new Date(startDate);
+  endDate.setHours(endDate.getHours()+duration);
+
+  function formatDate(date){
+    let y=date.getFullYear();
+    let m=String(date.getMonth()+1).padStart(2,'0');
+    let d=String(date.getDate()).padStart(2,'0');
+    let h=date.getHours();
+    let min=String(date.getMinutes()).padStart(2,'0');
+    let per=h>=12?"م":"ص";
+    h=h%12; h=h?h:12;
+    return `${h}:${min} ${per} | ${y}/${m}/${d}`;
+  }
+
+  if(copyUser && !copyUser.startsWith("<@")) copyUser=`<@${copyUser}>`;
+
+  let remaining = balance - duration;
+
+  let result=`﷽
+
+**قرار صـادر مـن <@&1071933369698496532>**
+
+الموضوع : إجازة داخلية
+
+للمسعف : ${copyUser}
+
+المدة : ${duration} ساعة
+
+من الساعة : ${formatDate(startDate)}
+إلى الساعة : ${formatDate(endDate)}
+
+الرصيد المتبقي : ${remaining} ساعة
+
+إعتماد :
+<@&1071933358503903242>
+<@725655707764129813>
+
+<@&1071933359086911561>
+<@813079786855464961>
+`;
+  document.getElementById("int_output").textContent=result;
+}
+function copyInternalLeave(){navigator.clipboard.writeText(document.getElementById("int_output").textContent); alert("✅ تم نسخ القرار بنجاح!");}
+
+// ---------- الاستقالة ----------
+function updateResFields(){
+  const level=document.getElementById('res_level').value;
+  document.getElementById('res_violationsField').style.display=(level==='مستوى 2 فما فوق')?'block':'none';
+}
+function generateResignation(){
+  const level=document.getElementById('res_level').value;
+  const nameCode=document.getElementById('res_nameCode').value.trim();
+  let copyId=document.getElementById('res_copyId').value.trim();
+  const hasViolations=document.getElementById('res_hasViolations').value;
+  if(!level) return alert('⚠️ الرجاء اختيار مستوى المسعف');
+  if(!nameCode) return alert('⚠️ الرجاء إدخال اسمه وكوده الميداني');
+  if(!copyId) return alert('⚠️ الرجاء إدخال الكوبي ايدي');
+  if(!copyId.startsWith('<@')) copyId=`<@${copyId}>`;
+  let result='';
+  if(level==='متدرب'||level==='مستوى 1'){
+    let days=level==='متدرب'?14:7;
+    let fine=level==='متدرب'?'1,000,000':'500,000';
+    let reason=level==='متدرب'?'استقالة بمستوى متدرب':'استقالة بمستوى 1';
+    result=`﷽**
+
+قرار صـادر مـن <@&1071933369698496532> 
+
+الموضوع : إنهاء خدمات
+
+المسعف : ${copyId}
+
+اسمه وكوده الميداني : ${nameCode}
+
+هل يوجد عليه مخالفات سابقه : 
+ 
+العقوبة الاجماليه : فصل من الخدمه + منع من التوظيف (${days}) ايام + غرامه مالية بقيمه (${fine})
+
+سبب الفصل من الخدمة : ${reason}
+
+
+إعتماد :
+<@&1071933358503903242> 
+<@725655707764129813>  
+
+<@&1071933359086911561> 
+<@813079786855464961>   **`;
+  } else if(level==='مستوى 2 فما فوق'){
+    const violationsText=hasViolations?hasViolations:'لا';
+    result=`﷽**
+
+قرار صـادر مـن <@&1071933369698496532> 
+
+الموضوع : استقالة 
+
+المسعف : ${copyId}
+
+اسمه وكوده الميداني : ${nameCode}
+
+هل يوجد عليه مخالفات سابقه : ${violationsText}  
+
+نشكر جهودك المبذولة والملحوظة لدى القطاع ونسأل الله لك التوفيق
+
+
+إعتماد :
+<@&1071933358503903242>
+<@725655707764129813>  
+
+<@&1071933359086911561> 
+<@813079786855464961>   **`;
+  }
+  document.getElementById('res_output').textContent=result;
+}
+function copyResignation(){navigator.clipboard.writeText(document.getElementById('res_output').textContent); alert("✅ تم نسخ القرار بنجاح!");}
+
+// ---------- إجازة خارجية ----------
+function updateExtForm(){
+  const type=document.getElementById('ext_leaveType').value;
+  document.getElementById('ext_leaveDaysField').style.display=(type==='اجازة خارجية')?'block':'none';
+  document.getElementById('ext_extensionField').style.display=(type==='تمديد اجازة خارجية')?'block':'none';
+}
+function formatExtDate(date){
+  const yyyy=date.getFullYear();
+  const mm=String(date.getMonth()+1).padStart(2,'0');
+  const dd=String(date.getDate()).padStart(2,'0');
+  return `${dd}-${mm}-${yyyy}`;
+}
+function generateExternalLeave(){
+  const type=document.getElementById('ext_leaveType').value;
+  if(!type) return alert('⚠️ الرجاء اختيار نوع الإجازة');
+  let copyUser=document.getElementById("ext_copyUser").value.trim();
+  if(!copyUser) return alert('⚠️ الرجاء إدخال الكوبي ايدي');
+  if(!copyUser.startsWith('<@')) copyUser=`<@${copyUser}>`;
+  let tzDate=new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Riyadh"}));
+  let message='';
+  if(type==='اجازة خارجية'){
+    const leaveDays=parseInt(document.getElementById('ext_leaveDays').value);
+    if(!leaveDays||leaveDays<=0) return alert('⚠️ الرجاء إدخال مدة الإجازة بالأيام صحيحة');
+    const startDate=tzDate;
+    const endDate=new Date(startDate);
+    endDate.setDate(endDate.getDate()+leaveDays);
+    message=`﷽**
+
+قرار صـادر مـن <@&1071933369698496532> 
+
+الموضوع : اجازة خارجية 
+
+للمسعف : ${copyUser}
+
+المدة : ${leaveDays} يوم
+
+من تاريخ : ${formatExtDate(startDate)}
+
+إلى تاريخ : ${formatExtDate(endDate)}
+
+
+إعتماد :
+<@&1071933358503903242> 
+<@725655707764129813>  
+
+<@&1071933359086911561> 
+<@813079786855464961>   **`;
+  } else if(type==='تمديد اجازة خارجية'){
+    const prevEndStr=document.getElementById('ext_previousEndDate').value;
+    const extensionDays=parseInt(document.getElementById('ext_extensionDays').value);
+    if(!prevEndStr) return alert('⚠️ الرجاء إدخال تاريخ انتهاء الاجازة السابقة');
+    if(!extensionDays||extensionDays<=0) return alert('⚠️ الرجاء إدخال مدة التمديد بالأيام صحيحة');
+    const prevEndDate=new Date(prevEndStr+'T00:00:00');
+    const newEndDate=new Date(prevEndDate);
+    newEndDate.setDate(newEndDate.getDate()+extensionDays);
+    message=`﷽
+
+**قرار صـادر مـن <@&1071933369698496532> 
+
+الموضوع : تمديد اجازة خارجية 
+
+للمسعف : ${copyUser}
+
+المدة : ${extensionDays} يوم
+
+إلى تاريخ : ${formatExtDate(newEndDate)}
+
+
+إعتماد :
+<@&1071933358503903242> 
+<@725655707764129813>  
+
+<@&1071933359086911561> 
+<@813079786855464961>   **`;
+  }
+  document.getElementById('ext_output').textContent=message;
+}
+function copyExternalLeave(){navigator.clipboard.writeText(document.getElementById('ext_output').textContent); alert("✅ تم نسخ القرار بنجاح!");}
+
+// ---------- نموذج الانتداب ----------
+function generateAssignment(){
+  let copyId=document.getElementById('ass_copyId').value.trim();
+  let sector=document.getElementById('ass_sector').value;
+  let duration=parseInt(document.getElementById('ass_duration').value.trim());
+  if(!copyId) return alert("⚠️ الرجاء إدخال الكوبي ايدي");
+  if(!sector) return alert("⚠️ الرجاء اختيار القطاع");
+  if(isNaN(duration)||duration<=0) duration=0;
+  if(!copyId.startsWith("<@")) copyId=`<@${copyId}>`;
+  let tzDate=new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Riyadh"}));
+  tzDate.setDate(tzDate.getDate()+duration);
+  let yyyy=tzDate.getFullYear();
+  let mm=String(tzDate.getMonth()+1).padStart(2,'0');
+  let dd=String(tzDate.getDate()).padStart(2,'0');
+  let endDate=`${yyyy}/${mm}/${dd}`;
+  let result=`﷽
+
+**قرار صادر من <@&1071933369698496532> 
+
+الموضوع : انتداب
+
+للمسعف : ${copyId}
+
+القطاع المنتدب له : ${sector}
+
+المدة : ${duration}
+
+الى تاريخ : ${endDate}
+
+
+إعتماد :
+<@&1071933358503903242> 
+<@725655707764129813>  
+
+<@&1071933359086911561> 
+<@813079786855464961>    **`;
+  document.getElementById('ass_output').textContent=result;
+}
+function copyAssignment(){navigator.clipboard.writeText(document.getElementById('ass_output').textContent); alert("✅ تم نسخ القرار بنجاح!");}
+
+</script>
+</body>
+</html>
+
